@@ -4,6 +4,7 @@ Forked from github.com/plutov/packagemain/tree/master/20-tcp-chat
 A (very) simple chat server written in Go.
 
 # Changes introduced by this fork
+## For upcoming changes/features, please take a look at the TODO file!
 ## Commands
 - /members
 ### WIP
