@@ -10,9 +10,9 @@ A (very) simple chat server written in Go.
 - Get rid of the '/msg' command. Sending a message should be the norm/default, commands the exception
 # User seperation by unique identifier rather than their IP-Address
 # Commands
-- /msg <text> - sends a message to all members of the room the issuing user is in
+- /msg text - sends a message to all members of the room the issuing user is in
 - /quit - ends the connection
-- /join <name> - joins a room or creates it if it doesn't exist
+- /join name - joins a room or creates it if it doesn't exist
 - /rooms - lists all available rooms
-- /nick <name> - changes the user's nick name ("anonymous" by default)
+- /nick name - changes the user's nick name ("anonymous" by default)
 - /members - lists all users of the room the issuing user is in
