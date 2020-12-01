@@ -81,7 +81,7 @@ func (s *server) join(c *client, roomName string) {
 	}
 	r.members[c.conn.RemoteAddr()] = c
 
-	s.quitCurrentRoom(c)
+	s.removeClientFromRoom(c)
 	c.room = r
 
 	r.broadcast(c, fmt.Sprintf("%s joined the room", c.nick))
@@ -89,6 +89,7 @@ func (s *server) join(c *client, roomName string) {
 	c.msg(fmt.Sprintf("welcome to %s", roomName))
 }
 
+// List all currently active rooms.
 func (s *server) listRooms(c *client) {
 	var rooms []string
 	for name := range s.rooms {
@@ -98,21 +99,24 @@ func (s *server) listRooms(c *client) {
 	c.msg(fmt.Sprintf("available rooms: %s", strings.Join(rooms, ", ")))
 }
 
+// Send a message to all members of the room the sending user is currently in.
 func (s *server) msg(c *client, args []string) {
 	msg := strings.Join(args[1:len(args)], " ")
 	c.room.broadcast(c, c.nick+": "+msg)
 }
 
+// Leave the current room. All chat data for the current user will be lost.
 func (s *server) quit(c *client) {
 	log.Printf("client has left the chat: %s", c.conn.RemoteAddr().String())
 
-	s.quitCurrentRoom(c)
+	s.removeClientFromRoom(c)
 
 	c.msg("sad to see you go =(")
 	c.conn.Close()
 }
 
-func (s *server) quitCurrentRoom(c *client) {
+// Remove specified user from their current room.
+func (s *server) removeClientFromRoom(c *client) {
 	if c.room != nil {
 		oldRoom := s.rooms[c.room.name]
 		delete(s.rooms[c.room.name].members, c.conn.RemoteAddr())
