@@ -7,10 +7,11 @@
 - kick all clients
 - message all clients the server is shutting down
 * TODO user hirarchy/administration system
-* TODO pick something different than the ip address to seperate users from another [[file:/home/max/devel/go/tcp-chat/chat/room.go::9][file]]
+- "You do not have permission to issue this command. Please contact an administrator if this is an issue." hihi xD
+* DONE pick something different than the ip address to seperate users from another [[file:/home/max/devel/go/tcp-chat/chat/room.go::9][file]]
 - randomly generated identifiers? [[https://blog.kowalczyk.info/article/JyRZ/generating-good-unique-ids-in-go.html][website with some go implementations]]
-* TODO more commands
-** TODO /members: list all members of the current room
+* TODO more commands [1/2]
+** DONE /members: list all members of the current room
 As an example:
 #+begin_src go
 func (serv *server) ListMembers(client *client) {
@@ -23,4 +24,7 @@ func (serv *server) ListMembers(client *client) {
 }
 #+end_src
 Method `room.Members()` must first be implemented.
+** TODO /msg command shouldn't exist, should be the default
 * TODO reformat code so it complies with Go's idioms
+* TODO FIXME crash when command body is empty
+- control/check body of messages/commands, shouldn't be too long either

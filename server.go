@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 	"net"
 	"strings"
+	"github.com/segmentio/ksuid"
 )
 
 type server struct {
@@ -24,7 +26,7 @@ func newServer() *server {
 func (s *server) init() {
 	s.rooms["#welcome"] = &room{
 		name: "#welcome",
-		members: make(map[net.Addr]*client),
+		members: make(map[string]*client),
 	}
 }
 
@@ -41,6 +43,8 @@ func (s *server) run() {
 			s.msg(cmd.client, cmd.args)
 		case CMD_QUIT:
 			s.quit(cmd.client)
+		case CMD_LISTMSG:
+			s.ListMembers(cmd.client)
 		}
 	}
 }
@@ -53,9 +57,17 @@ func (s *server) shutdown() {
 func (s *server) newClient(conn net.Conn) {
 	log.Printf("new client has joined: %s", conn.RemoteAddr().String())
 
+	// generate new client id
+	uid, err := ksuid.NewRandomWithTime(time.Now())
+	if err != nil {
+		log.Printf("Failed to create new client id!")
+		// and then it will crash and burn... 'cause of nil
+	}
+
 	c := &client{
 		conn:     conn,
 		nick:     "anonymous",
+		id:       uid.String(),
 		commands: s.commands,
 	}
 
@@ -75,11 +87,11 @@ func (s *server) join(c *client, roomName string) {
 	if !ok {
 		r = &room{
 			name:    roomName,
-			members: make(map[net.Addr]*client),
+			members: make(map[string]*client),
 		}
 		s.rooms[roomName] = r
 	}
-	r.members[c.conn.RemoteAddr()] = c
+	r.members[c.id] = c
 
 	s.removeClientFromRoom(c)
 	c.room = r
@@ -99,6 +111,17 @@ func (s *server) listRooms(c *client) {
 	c.msg(fmt.Sprintf("available rooms: %s", strings.Join(rooms, ", ")))
 }
 
+// List all current members of the room.
+func (s *server) ListMembers(c *client) {
+	var room = s.rooms[c.room.name]
+	var members []string
+	for _, nick := range room.Members() {
+		members = append(members, nick)
+	}
+
+	c.msg(fmt.Sprintf("Members of the current room: %s", strings.Join(members[1:], ", ")))
+}
+
 // Send a message to all members of the room the sending user is currently in.
 func (s *server) msg(c *client, args []string) {
 	msg := strings.Join(args[1:len(args)], " ")
@@ -107,7 +130,7 @@ func (s *server) msg(c *client, args []string) {
 
 // Leave the current room. All chat data for the current user will be lost.
 func (s *server) quit(c *client) {
-	log.Printf("client has left the chat: %s", c.conn.RemoteAddr().String())
+	log.Printf("client has left the chat: %s", c.id)
 
 	s.removeClientFromRoom(c)
 
@@ -119,7 +142,7 @@ func (s *server) quit(c *client) {
 func (s *server) removeClientFromRoom(c *client) {
 	if c.room != nil {
 		oldRoom := s.rooms[c.room.name]
-		delete(s.rooms[c.room.name].members, c.conn.RemoteAddr())
+		delete(s.rooms[c.room.name].members, c.id)
 		oldRoom.broadcast(c, fmt.Sprintf("%s has left the room", c.nick))
 	}
 }

@@ -10,6 +10,7 @@ import (
 type client struct {
 	conn     net.Conn
 	nick     string
+	id       string
 	room     *room
 	commands chan<- command
 }
@@ -53,6 +54,11 @@ func (c *client) readInput() {
 		case "/quit":
 			c.commands <- command{
 				id:     CMD_QUIT,
+				client: c,
+			}
+		case "/members":
+			c.commands <- command{
+				id:     CMD_LISTMSG,
 				client: c,
 			}
 		default:
