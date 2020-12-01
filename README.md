@@ -7,12 +7,10 @@ A (very) simple chat server written in Go.
 ## For upcoming changes/features, please take a look at the TODO file!
 ## Commands
 - /members
-### WIP
-- Get rid of the '/msg' command. Sending a message should be the norm/default, commands the exception
+- /msg text - command is no longer necessary. If not prefixed by a '/', text will be handled as message not as a command.
 # User seperation by unique identifier rather than their IP-Address
 # Commands
-- /msg text - sends a message to all members of the room the issuing user is in
-- /quit - ends the connection
+- /quit - quits the current room, and if in no room, ends the connection
 - /join name - joins a room or creates it if it doesn't exist
 - /rooms - lists all available rooms
 - /nick name - changes the user's nick name ("anonymous" by default)

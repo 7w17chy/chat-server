@@ -124,7 +124,8 @@ func (s *server) ListMembers(c *client) {
 
 // Send a message to all members of the room the sending user is currently in.
 func (s *server) msg(c *client, args []string) {
-	msg := strings.Join(args[1:len(args)], " ")
+	//msg := strings.Join(args[1:len(args)], " ")
+	msg := strings.Join(args[:len(args)], " ")
 	c.room.broadcast(c, c.nick+": "+msg)
 }
 

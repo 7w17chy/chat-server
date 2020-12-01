@@ -45,12 +45,12 @@ func (c *client) readInput() {
 				id:     CMD_ROOMS,
 				client: c,
 			}
-		case "/msg":
+			/*case "/msg":
 			c.commands <- command{
 				id:     CMD_MSG,
 				client: c,
 				args:   args,
-			}
+			}*/
 		case "/quit":
 			c.commands <- command{
 				id:     CMD_QUIT,
@@ -62,7 +62,15 @@ func (c *client) readInput() {
 				client: c,
 			}
 		default:
-			c.err(fmt.Errorf("unknown command: %s", cmd))
+			if strings.HasPrefix(cmd, "/") {
+				c.err(fmt.Errorf("Unknown command: %s", cmd))
+			}
+			// FIXME message can be endlessly large
+			c.commands <- command{
+				id:     CMD_MSG,
+				client: c,
+				args:   args,
+			}
 		}
 	}
 }
