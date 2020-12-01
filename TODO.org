@@ -1,0 +1,10 @@
+#+TITLE: Todo
+
+* TODO Less hard-coded numbers
+- CLI-flags
+- config file
+* TODO implement shutdown function [[file:/home/max/devel/go/tcp-chat/chat/server.go::41][file]]
+- kick all clients
+- message all clients the server is shutting down
+* TODO user hirarchy/administration system
+* TODO user something different than the ip address to seperate users from another [[file:/home/max/devel/go/tcp-chat/chat/room.go::9][file]]
