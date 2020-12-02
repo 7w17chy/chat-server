@@ -7,9 +7,9 @@ import (
 )
 
 func main() {
-	s := newServer()
-	s.init()
-	go s.run()
+	s := NewServer()
+	s.Init()
+	go s.Run()
 
 	// FIXME hard-coded number!
 	listener, err := net.Listen("tcp", ":8888")
@@ -30,7 +30,7 @@ func main() {
 				continue
 			}
 
-			go s.newClient(conn)
+			go s.NewClient(conn)
 		}
 	}()
 
@@ -39,5 +39,5 @@ func main() {
 		// sleep for 30 seconds
 		time.Sleep(30 * time.Second) // FIXME hard-coded number!
 	}
-	s.shutdown()
+	s.Shutdown()
 }

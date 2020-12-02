@@ -9,52 +9,52 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-type server struct {
-	rooms    map[string]*room
-	commands chan command
+type Server struct {
+	rooms    map[string]*Room
+	commands chan Command
 	running  bool
 }
 
-func newServer() *server {
-	return &server{
-		rooms:    make(map[string]*room),
-		commands: make(chan command),
+func NewServer() *Server {
+	return &Server{
+		rooms:    make(map[string]*Room),
+		commands: make(chan Command),
 		running:  true,
 	}
 }
 
-func (s *server) init() {
-	s.rooms["#welcome"] = &room{
+func (s *Server) Init() {
+	s.rooms["#welcome"] = &Room{
 		name: "#welcome",
-		members: make(map[string]*client),
+		members: make(map[string]*Client),
 	}
 }
 
-func (s *server) run() {
+func (s *Server) Run() {
 	for cmd := range s.commands {
 		switch cmd.id {
 		case CMD_NICK:
-			s.nick(cmd.client, cmd.args[1])
+			s.Nick(cmd.client, cmd.args[1])
 		case CMD_JOIN:
-			s.join(cmd.client, cmd.args[1])
+			s.Join(cmd.client, cmd.args[1])
 		case CMD_ROOMS:
-			s.listRooms(cmd.client)
+			s.ListRooms(cmd.client)
 		case CMD_MSG:
-			s.msg(cmd.client, cmd.args)
+			s.Msg(cmd.client, cmd.args)
 		case CMD_QUIT:
-			s.quit(cmd.client)
+			s.Quit(cmd.client)
 		case CMD_LISTMSG:
 			s.ListMembers(cmd.client)
 		}
 	}
 }
 
-func (s *server) shutdown() {
+func (s *Server) Shutdown() {
 	// TODO
 	return
 }
 
-func (s *server) newClient(conn net.Conn) {
+func (s *Server) NewClient(conn net.Conn) {
 	log.Printf("new client has joined: %s", conn.RemoteAddr().String())
 
 	// generate new client id
@@ -64,7 +64,7 @@ func (s *server) newClient(conn net.Conn) {
 		// and then it will crash and burn... 'cause of nil
 	}
 
-	c := &client{
+	c := &Client{
 		conn:     conn,
 		nick:     "anonymous",
 		id:       uid.String(),
@@ -72,22 +72,22 @@ func (s *server) newClient(conn net.Conn) {
 	}
 
 	// put them in a default dedicated 'welcome'-room
-	s.join(c, "#welcome")
+	s.Join(c, "#welcome")
 
-	c.readInput()
+	c.ReadInput()
 }
 
-func (s *server) nick(c *client, nick string) {
+func (s *Server) Nick(c *Client, nick string) {
 	c.nick = nick
-	c.msg(fmt.Sprintf("all right, I will call you %s", nick))
+	c.Msg(fmt.Sprintf("all right, I will call you %s", nick))
 }
 
-func (s *server) join(c *client, roomName string) {
+func (s *Server) Join(c *Client, roomName string) {
 	r, ok := s.rooms[roomName]
 	if !ok {
-		r = &room{
+		r = &Room{
 			name:    roomName,
-			members: make(map[string]*client),
+			members: make(map[string]*Client),
 		}
 		s.rooms[roomName] = r
 	}
@@ -96,54 +96,54 @@ func (s *server) join(c *client, roomName string) {
 	s.removeClientFromRoom(c)
 	c.room = r
 
-	r.broadcast(c, fmt.Sprintf("%s joined the room", c.nick))
+	r.Broadcast(c, fmt.Sprintf("%s joined the room", c.nick))
 
-	c.msg(fmt.Sprintf("welcome to %s", roomName))
+	c.Msg(fmt.Sprintf("welcome to %s", roomName))
 }
 
 // List all currently active rooms.
-func (s *server) listRooms(c *client) {
+func (s *Server) ListRooms(c *Client) {
 	var rooms []string
 	for name := range s.rooms {
 		rooms = append(rooms, name)
 	}
 
-	c.msg(fmt.Sprintf("available rooms: %s", strings.Join(rooms, ", ")))
+	c.Msg(fmt.Sprintf("available rooms: %s", strings.Join(rooms, ", ")))
 }
 
 // List all current members of the room.
-func (s *server) ListMembers(c *client) {
+func (s *Server) ListMembers(c *Client) {
 	var room = s.rooms[c.room.name]
 	var members []string
 	for _, nick := range room.Members() {
 		members = append(members, nick)
 	}
 
-	c.msg(fmt.Sprintf("Members of the current room: %s", strings.Join(members[1:], ", ")))
+	c.Msg(fmt.Sprintf("Members of the current room: %s", strings.Join(members[1:], ", ")))
 }
 
 // Send a message to all members of the room the sending user is currently in.
-func (s *server) msg(c *client, args []string) {
+func (s *Server) Msg(c *Client, args []string) {
 	//msg := strings.Join(args[1:len(args)], " ")
 	msg := strings.Join(args[:len(args)], " ")
-	c.room.broadcast(c, c.nick+": "+msg)
+	c.room.Broadcast(c, c.nick+": "+msg)
 }
 
 // Leave the current room. All chat data for the current user will be lost.
-func (s *server) quit(c *client) {
+func (s *Server) Quit(c *Client) {
 	log.Printf("client has left the chat: %s", c.id)
 
 	s.removeClientFromRoom(c)
 
-	c.msg("sad to see you go =(")
+	c.Msg("sad to see you go =(")
 	c.conn.Close()
 }
 
 // Remove specified user from their current room.
-func (s *server) removeClientFromRoom(c *client) {
+func (s *Server) removeClientFromRoom(c *Client) {
 	if c.room != nil {
 		oldRoom := s.rooms[c.room.name]
 		delete(s.rooms[c.room.name].members, c.id)
-		oldRoom.broadcast(c, fmt.Sprintf("%s has left the room", c.nick))
+		oldRoom.Broadcast(c, fmt.Sprintf("%s has left the room", c.nick))
 	}
 }

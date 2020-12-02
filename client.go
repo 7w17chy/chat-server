@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type client struct {
+type Client struct {
 	conn     net.Conn
 	nick     string
 	id       string
-	room     *room
-	commands chan<- command
+	room     *Room
+	commands chan<- Command
 }
 
-func (c *client) readInput() {
+func (c *Client) ReadInput() {
 	for {
 		msg, err := bufio.NewReader(c.conn).ReadString('\n')
 		if err != nil {
@@ -29,35 +29,29 @@ func (c *client) readInput() {
 
 		switch cmd {
 		case "/nick":
-			c.commands <- command{
+			c.commands <- Command{
 				id:     CMD_NICK,
 				client: c,
 				args:   args,
 			}
 		case "/join":
-			c.commands <- command{
+			c.commands <- Command{
 				id:     CMD_JOIN,
 				client: c,
 				args:   args,
 			}
 		case "/rooms":
-			c.commands <- command{
+			c.commands <- Command{
 				id:     CMD_ROOMS,
 				client: c,
 			}
-			/*case "/msg":
-			c.commands <- command{
-				id:     CMD_MSG,
-				client: c,
-				args:   args,
-			}*/
 		case "/quit":
-			c.commands <- command{
+			c.commands <- Command{
 				id:     CMD_QUIT,
 				client: c,
 			}
 		case "/members":
-			c.commands <- command{
+			c.commands <- Command{
 				id:     CMD_LISTMSG,
 				client: c,
 			}
@@ -66,7 +60,7 @@ func (c *client) readInput() {
 				c.err(fmt.Errorf("Unknown command: %s", cmd))
 			}
 			// FIXME message can be endlessly large
-			c.commands <- command{
+			c.commands <- Command{
 				id:     CMD_MSG,
 				client: c,
 				args:   args,
@@ -75,10 +69,10 @@ func (c *client) readInput() {
 	}
 }
 
-func (c *client) err(err error) {
+func (c *Client) err(err error) {
 	c.conn.Write([]byte("err: " + err.Error() + "\n"))
 }
 
-func (c *client) msg(msg string) {
+func (c *Client) Msg(msg string) {
 	c.conn.Write([]byte("> " + msg + "\n"))
 }

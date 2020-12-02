@@ -1,12 +1,12 @@
 package main
 
-type room struct {
+type Room struct {
 	name    string
-	members map[string]*client
+	members map[string]*Client
 }
 
 // Returns a string slice with the nick names of all current members of the room.
-func (room *room) Members() []string {
+func (room *Room) Members() []string {
 	clientNicks := make([]string, 1)
 	for _, client := range room.members {
 		clientNicks = append(clientNicks, client.nick)
@@ -16,11 +16,11 @@ func (room *room) Members() []string {
 }
 
 // Send message to all members of the room.
-func (r *room) broadcast(sender *client, msg string) {
+func (r *Room) Broadcast(sender *Client, msg string) {
 	for id, m := range r.members {
 		// don't send message to sender
 		if sender.id != id {
-			m.msg(msg)
+			m.Msg(msg)
 		}
 	}
 }

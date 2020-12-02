@@ -11,8 +11,8 @@ const (
 	CMD_LISTMSG
 )
 
-type command struct {
+type Command struct {
 	id     commandID
-	client *client
+	client *Client
 	args   []string
 }
