@@ -9,6 +9,7 @@ const (
 	CMD_MSG
 	CMD_QUIT
 	CMD_LISTMSG
+	CMD_SHTDWN
 )
 
 type Command struct {

@@ -55,6 +55,11 @@ func (c *Client) ReadInput() {
 				id:     CMD_LISTMSG,
 				client: c,
 			}
+		case "/shutdown":
+			c.commands <- Command{
+				id:     CMD_SHTDWN,
+				client: c,
+			}
 		default:
 			if strings.HasPrefix(cmd, "/") {
 				c.err(fmt.Errorf("Unknown command: %s", cmd))

@@ -45,13 +45,24 @@ func (s *Server) Run() {
 			s.Quit(cmd.client)
 		case CMD_LISTMSG:
 			s.ListMembers(cmd.client)
+		case CMD_SHTDWN:
+			s.Shutdown()
 		}
 	}
 }
 
-func (s *Server) Shutdown() {
-	// TODO
-	return
+// Shut down server gracefully.
+func (server *Server) Shutdown() {
+	// Close all client's connections
+	for _, room := range server.rooms {
+		room.GeneralMessage("Server is shutting down.")
+		for _, client := range room.members {
+			server.Kick(client)
+		}
+	}
+
+	// Exit superloop
+	server.running = false
 }
 
 func (s *Server) NewClient(conn net.Conn) {
@@ -137,6 +148,12 @@ func (s *Server) Quit(c *Client) {
 
 	c.Msg("sad to see you go =(")
 	c.conn.Close()
+}
+
+// Remove client from their current room and kick them from the server by closing their connection.
+func (server *Server) Kick(client *Client) {
+	server.removeClientFromRoom(client)
+	client.conn.Close()
 }
 
 // Remove specified user from their current room.

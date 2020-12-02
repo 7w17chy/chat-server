@@ -15,6 +15,13 @@ func (room *Room) Members() []string {
 	return clientNicks
 }
 
+// Sends message to all members of the room.
+func (r *Room) GeneralMessage(msg string) {
+	for _, m := range r.members {
+		m.Msg(msg)
+	}
+}
+
 // Send message to all members of the room.
 func (r *Room) Broadcast(sender *Client, msg string) {
 	for id, m := range r.members {

@@ -39,5 +39,4 @@ func main() {
 		// sleep for 30 seconds
 		time.Sleep(30 * time.Second) // FIXME hard-coded number!
 	}
-	s.Shutdown()
 }
